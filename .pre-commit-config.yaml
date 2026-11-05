@@ -1,0 +1,68 @@
+# General-purpose hygiene hooks. Language-agnostic; add your own linters and formatters below.
+#
+# These run in two places:
+#   - CI: .github/workflows/pre-commit.yml runs every hook on every pull request to main
+#     and every push to main. This is the enforcement point.
+#   - Locally, optionally: `pre-commit install` runs them on each `git commit`.
+#     Agents run them by hand before opening a PR:
+#       pre-commit run --all-files
+#       pre-commit run <hook-id> --files <path>
+#
+# If local commits must never be blocked (for example, a tool auto-commits on a timer),
+# see "CI vs. local hooks" in docs/setup.md for the manual-stage variant.
+#
+# end-of-file-fixer        - every file ends in exactly one newline.
+# trailing-whitespace      - strips trailing spaces, keeping Markdown's two-space hard break.
+# mixed-line-ending        - normalizes line endings to LF.
+# check-yaml               - YAML files parse.
+# check-json               - JSON files parse.
+# check-toml               - TOML files parse.
+# check-merge-conflict     - no leftover <<<<<<< / >>>>>>> conflict markers.
+# check-added-large-files  - nothing over 1 MB.
+# check-case-conflict      - no two paths differing only by case (breaks on macOS/Windows).
+# detect-private-key       - no PEM private keys committed.
+#
+# pre-commit only sees git-tracked files, so anything gitignored is skipped automatically.
+
+minimum_pre_commit_version: "3.2.0"
+
+# PROJECT-SPECIFIC: exclude generated, vendored, or tool-managed paths, e.g.
+#   exclude: ^(vendor/|dist/|\.idea/)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    # Pinned to a commit SHA; `pre-commit autoupdate --freeze` refreshes it.
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      # --enforce-all: without it the hook only checks newly staged files, which makes
+      # it a no-op under `pre-commit run --all-files` in CI.
+      - id: check-added-large-files
+        args: [--maxkb=1024, --enforce-all]
+      - id: check-case-conflict
+      - id: detect-private-key
+
+  # PROJECT-SPECIFIC: add language linters and formatters here, pinned the same way.
+  # Examples (uncomment and pin a rev):
+  #
+  # - repo: https://github.com/astral-sh/ruff-pre-commit
+  #   rev: <sha>  # frozen: vX.Y.Z
+  #   hooks:
+  #     - id: ruff
+  #     - id: ruff-format
+  #
+  # - repo: local
+  #   hooks:
+  #     - id: my-project-check
+  #       name: my project check
+  #       entry: python scripts/my_check.py
+  #       language: python
+  #       files: \.md$
